@@ -1,0 +1,2 @@
+# cognihub_pyeffectref
+cognihub项目用到的类似vue3中effect/ref的简化版实现
