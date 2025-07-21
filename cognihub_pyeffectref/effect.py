@@ -1,5 +1,5 @@
 """EffectWrapper 类和 effect 装饰器的实现。
-提供了对同步和异步效果的支持，并允许在 Ref 变化时触发效果。
+提供了对同步和异步效果的支持,并允许在 Ref 变化时触发效果。
 
 用法:
     from cognihub_pyeffectref import effect, Ref
@@ -18,7 +18,7 @@ from typing import Callable, Any
 
 class EffectWrapper:
     """
-    封装 effect 函数，提供 __call__ 使其可调用，并管理其 stop 行为。
+    封装 effect 函数,提供 __call__ 使其可调用,并管理其 stop 行为。
     """
 
     def __init__(self, func: Callable[..., Any], is_async: bool):
@@ -37,7 +37,7 @@ class EffectWrapper:
             print(f"Warning: Calling inactive effect '{self.name}'.")
             return
 
-        # 核心修改：保存这次调用传入的参数
+        # 核心修改: 保存这次调用传入的参数
         self._last_args = args
         self._last_kwargs = kwargs
         self._has_been_called_at_least_once = True
@@ -67,42 +67,42 @@ class EffectWrapper:
         if not self._is_active:
             return
         
-        # 只有在至少被手动调用过一次并保存了参数后，Ref 触发时才重用这些参数
+        # 只有在至少被手动调用过一次并保存了参数后,Ref 触发时才重用这些参数
         if not self._has_been_called_at_least_once:
             print(f"Warning: Effect '{self.name}' triggered by Ref change but never explicitly called with parameters. Skipping execution.")
             return
 
-        # 核心修正：使用上次保存的参数来调用 _func
+        # 核心修正: 使用上次保存的参数来调用 _func
         if self._is_async:
-            # 对于异步函数，返回协程对象，由调用者决定如何处理
+            # 对于异步函数,返回协程对象,由调用者决定如何处理
             return self._run_triggered_async(self._last_args, self._last_kwargs)
         else:
             return self._run_triggered_sync(self._last_args, self._last_kwargs)
 
     def _run_triggered_sync(self, args_to_pass: tuple[Any, ...], kwargs_to_pass: dict[str, Any]) -> Any:
-        # 不设置上下文变量，因为依赖已收集
+        # 不设置上下文变量,因为依赖已收集
         return self._func(*args_to_pass, **kwargs_to_pass)
 
     async def _run_triggered_async(self, args_to_pass: tuple[Any, ...], kwargs_to_pass: dict[str, Any]) -> Any:
-        # 不设置上下文变量，因为依赖已收集
+        # 不设置上下文变量,因为依赖已收集
         return await self._func(*args_to_pass, **kwargs_to_pass)
     def stop(self) -> None:
         """停止这个 effect,使其不再响应 Ref 变化。"""
         self._is_active = False
-        # 在这里，如果 Ref 内部存储的是 EffectWrapper 实例，
+        # 在这里,如果 Ref 内部存储的是 EffectWrapper 实例,
         # 则可以遍历 Ref 的 _subscribers 并移除 self。
-        # 但这需要 Ref 暴露一个 API 或 EffectWrapper 持有 Ref 的引用，
-        # 为了简化，我们只设置 _is_active。
+        # 但这需要 Ref 暴露一个 API 或 EffectWrapper 持有 Ref 的引用,
+        # 为了简化,我们只设置 _is_active。
         print(f"Effect '{self._func.__name__}' stopped.")
     
     @property
     def name(self) -> str:
         return self._func.__name__ + ("_async" if self._is_async else "_sync")
 
-# --- 2. 装饰器 factory，返回一个 EffectWrapper 实例 ---
+# --- 2. 装饰器 factory,返回一个 EffectWrapper 实例 ---
 def effect(func: Callable) -> EffectWrapper:
     """
-    一个通用的装饰器，返回一个 EffectWrapper 实例。
+    一个通用的装饰器,返回一个 EffectWrapper 实例。
     """
     is_async = asyncio.iscoroutinefunction(func)
     return EffectWrapper(func, is_async)

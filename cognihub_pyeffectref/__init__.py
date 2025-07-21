@@ -5,7 +5,8 @@ This package provides a reactive programming model similar to Vue 3's compositio
 allowing you to create reactive data containers (Ref) and effects that automatically
 respond to data changes.
 """
-from .ref import Ref
+from .ref import Ref, ReadOnlyRef
 from .effect import effect
+from .reactive_dict import ReactiveDict
 
-__all__ = ["Ref", "effect"]
+__all__ = ["Ref", "ReadOnlyRef", "effect", "ReactiveDict"]

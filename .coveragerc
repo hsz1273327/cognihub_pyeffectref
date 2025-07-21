@@ -1,0 +1,46 @@
+[run]
+# 指定要测量的源代码包
+source = cognihub_pyeffectref
+
+# 忽略的文件和目录
+omit = 
+    */tests/*
+    */test_*.py
+    */__pycache__/*
+    */venv/*
+    setup.py
+
+# 启用分支覆盖率
+branch = True
+
+[report]
+# 设置覆盖率精度
+precision = 2
+
+# 显示缺失的行号
+show_missing = True
+
+# 跳过被标记为 # pragma: no cover 的行
+skip_covered = False
+
+# 排除的行（正则表达式）
+exclude_lines =
+    # 跳过未实现的方法
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+
+[html]
+# HTML 报告输出目录
+directory = htmlcov
+
+[xml]
+# XML 报告输出文件
+output = coverage.xml
