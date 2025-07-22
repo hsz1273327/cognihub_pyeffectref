@@ -8,29 +8,17 @@ class ActionExecutor:
     """当 view()不带参数调用时返回的对象。
     允许通过点语法执行已注册的 action(例如 config().action_name()).
     """
-
+    
     def __init__(self, allowed_actions: Dict[str, Callable[..., Any]]):
+        """初始化 ActionExecutor."""
         self._allowed_actions = allowed_actions
 
-    def __getattr__(self, name: str) -> Callable[..., Any]:
-        """允许通过点语法调用 action。"""
+    def __getattr__(self, name: str) -> Any:
+        """通过点语法执行 action"""
         if name in self._allowed_actions:
-            # 包装原始函数以确保调用时行为正确
-            def action_wrapper(*args: Any, **kwargs: Any) -> Any:
-                print(f"[ActionExecutor] 执行 action '{name}'...")
-                return self._allowed_actions[name](*args, **kwargs)
-            # 确保包装函数的 __doc__ 和 __name__ 匹配原始函数
-            action_wrapper.__doc__ = self._allowed_actions[name].__doc__
-            action_wrapper.__name__ = name
-            return action_wrapper
-        raise AttributeError(f"Action '{name}' 不可用或未被授权。")
-
-    def __dir__(self) -> list[str]:
-        """用于 Tab 自动补全和 dir()。"""
-        return list(super().__dir__()) + list(self._allowed_actions.keys())
-
-    def __repr__(self) -> str:
-        return f"ActionExecutor(可用 action={list(self._allowed_actions.keys())})"
+            action_func = self._allowed_actions[name]
+            return action_func  # 返回函数本身,让调用者执行
+        raise AttributeError(f"Action '{name}' not found or not allowed")
 
 
 class ReadOnlyView:
@@ -41,104 +29,82 @@ class ReadOnlyView:
     """
 
     def __init__(self, reactive_dict: ReactiveDict):
+        if not isinstance(reactive_dict, ReactiveDict):
+            raise TypeError("ReadOnlyView 必须包装一个 ReactiveDict 实例.")
+        
         self._reactive_dict = reactive_dict
         # _allowed_actions 现在直接存储函数，用于此特定实例
         self._allowed_actions: Dict[str, Callable[..., Any]] = {}
 
-    def __getattr__(self, name: str) -> Union['ReadOnlyView', ReadOnlyRef]:
+    def __getattr__(self, name: str) -> Union['ReadOnlyView', ReadOnlyRef[Any]]:
         """
-        通过点语法访问属性.
-        如果结果是嵌套的 ReactiveDict,则返回 ReadOnlyView.
-        如果结果是叶子 Ref,则返回 ReadOnlyRef.
-        否则返回原始值.
+        实现点式访问,返回嵌套的 ReadOnlyView 或 ReadOnlyRef.
         """
+        # 检查请求的属性是否在底层 ReactiveDict 中存在
         if name not in self._reactive_dict._data_refs:
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+            raise AttributeError(
+                f"'{self.__class__.__name__}' 对象没有属性 '{name}'."
+            )
 
-        # 获取底层 ReactiveDict 中对应的 Ref
+        # 获取底层 ReactiveDict 包装的原始 Ref 对象
         target_ref = self._reactive_dict._data_refs[name]
         value_in_ref = target_ref.value
 
+        # 如果值是 ReactiveDict (意味着是一个嵌套的字典结构)
         if isinstance(value_in_ref, ReactiveDict):
-            # 如果是嵌套的 ReactiveDict,递归返回 ReadOnlyView
+            # 递归地返回一个新的 ReadOnlyView 实例,保持只读和点式访问
             return ReadOnlyView(value_in_ref)
-        else:
-            # 如果是叶子节点 Ref,返回 ReadOnlyRef
-            return ReadOnlyRef(target_ref)
 
-    def __getitem__(self, key: str) -> Union['ReadOnlyView', ReadOnlyRef]:
-        """
-        通过字典风格访问属性.
-        逻辑同 __getattr__.
-        """
-        if key not in self._reactive_dict._data_refs:
-            raise KeyError(f"'{key}' not found in ReadOnlyView.")
-
-        target_ref = self._reactive_dict._data_refs[key]
-        value_in_ref = target_ref.value
-
-        if isinstance(value_in_ref, ReactiveDict):
-            return ReadOnlyView(value_in_ref)
+        # 对于所有其他值,包装成 ReadOnlyRef
         else:
             return ReadOnlyRef(target_ref)
 
+    def __getitem__(self, key: str) -> Union['ReadOnlyView', ReadOnlyRef[Any]]:
+        """
+        允许字典式访问,其行为与 getattr 相同,但 MyPy 对此的支持不如点式访问.
+        """
+        return self.__getattr__(key)
+
+    # 明确不提供任何修改数据的方法,强制只读
+    # 插件试图修改将触发 AttributeError 或 TypeError
     def __setattr__(self, name: str, value: Any) -> None:
-        # 严格禁止在只读视图上进行设置
-        if name.startswith('_'):  # 允许设置视图自身的私有属性
+        # 允许设置内部私有属性
+        if name.startswith('_'):
             super().__setattr__(name, value)
         else:
-            raise AttributeError(f"Cannot modify attribute '{name}' on a read-only view.")
+            raise AttributeError(f"'{self.__class__.__name__}' 对象是只读的,不允许设置属性 '{name}'.")
 
     def __setitem__(self, key: str, value: Any) -> NoReturn:
-        # 严格禁止在只读视图上进行设置
-        raise TypeError(f"Cannot set item '{key}' on a read-only view.")
+        raise TypeError(f"'{self.__class__.__name__}' 对象是只读的,不允许通过键设置项.")
+
+    def __delitem__(self, key: str) -> NoReturn:
+        raise TypeError(f"'{self.__class__.__name__}' 对象是只读的,不允许通过键删除项.")
 
     def to_dict(self) -> Dict[str, Any]:
-        """将当前状态转换为普通字典(调用时拷贝)."""
+        """
+        将只读视图的内容转换为普通的 Python 字典.
+        """
         return self._reactive_dict.to_dict()
 
+    def __len__(self) -> int:
+        return len(self._reactive_dict)
 
-    def __call__(self, func: Optional[ Union[str,Callable[..., Any]]]=None) -> Union[Callable[[Callable[..., Any]], Callable[..., Any]], 'ActionExecutor']:
-        """根据调用方式处理 action 注册或返回 ActionExecutor.
+    def __iter__(self) -> Any:
+        return iter(self._reactive_dict)
 
-        行为模式：
-        1. config(): 返回 ActionExecutor 实例。
-        2. config(func): 注册 func,使用 func.__name__ 作为 action 名.
-                        如果 func 是匿名函数，会报错，因为它没有有意义的 __name__.
-        3. config("action_name"): 返回一个内部装饰器，该装饰器将接收函数并注册为 'action_name'.
+    # Action 注册和执行系统
+    def __call__(self, action_name: Optional[str] = None) -> Union[ActionExecutor, Callable]:
         """
-        # 案例 1：config() -> 返回 ActionExecutor
-        if func is None:
+        ReadOnlyView 的调用接口.
+        - view() -> 返回 ActionExecutor，允许执行注册的 action
+        - view('action_name') -> 装饰器，注册 action
+        """
+        if action_name is None:
+            # 无参数调用，返回 ActionExecutor
             return ActionExecutor(self._allowed_actions)
         else:
-            # 尝试处理注册逻辑
-            # 案例 2：config(func) 或 @config
-            if callable(func):
-                action_name = func.__name__
-                if action_name == '<lambda>':
-                    raise TypeError(
-                        "直接使用 @config 注册匿名函数是不允许的,请使用 @config('action_name') 形式为匿名函数指定名称."
-                    )
+            # 有参数调用，作为装饰器使用
+            def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
                 self._allowed_actions[action_name] = func
-                return func
-            else:
-
-                # 案例 3：config("action_name") 或 @config("action_name")
-                if isinstance(func, str):
-                    action_name_str = func
-                    def decorator_with_name(func: Callable[..., Any]) -> Callable[..., Any]:
-                        # if func.__name__ == '<lambda>':
-                        #     raise TypeError(
-                        #         "匿名函数不能直接注册为 action,请使用 @config('action_name') 形式为匿名函数指定名称."
-                        #     )
-                        self._allowed_actions[action_name_str] = func
-                        return func
-                    return decorator_with_name  # 返回一个接受函数并注册它的装饰器
-                else:
-                    # 如果走到这里，说明调用方式不符合预期
-                    raise TypeError(
-                        "ReadOnlyView 只能以下列方式调用：\n"
-                        "1. config() -> 获取 action 执行器。\n"
-                        "2. @config def my_action(): ... -> 注册一个名为 'my_action' 的 action。\n"
-                        "3. @config('custom_name') def my_func_or_lambda(): ... -> 注册一个带指定名称的 action。"
-                    )
+                return func  # 返回原函数，不修改
+            return decorator

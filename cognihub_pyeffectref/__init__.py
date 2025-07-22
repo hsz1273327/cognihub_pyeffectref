@@ -8,5 +8,6 @@ respond to data changes.
 from .ref import Ref, ReadOnlyRef
 from .effect import effect
 from .reactive_dict import ReactiveDict
+from .view import ReadOnlyView
 
 __all__ = ["Ref", "ReadOnlyRef", "effect", "ReactiveDict"]

@@ -138,7 +138,7 @@ def run_tests_with_coverage(test_pattern: Optional[str] = None, html_report: boo
     return 0
 
 
-def print_test_summary(result) -> None:
+def print_test_summary(result:unittest.TextTestResult) -> None:
     """打印测试摘要"""
     print("\n" + "=" * 50)
     print("📊 测试摘要")

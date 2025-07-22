@@ -297,13 +297,13 @@ class ReadOnlyRef(Generic[T]):
     """
     __slots__ = ('_target_ref',)
 
-    def __init__(self, target_ref: Ref):
+    def __init__(self, target_ref: Ref[T]) -> None:
         if not isinstance(target_ref, Ref):
             raise TypeError("ReadOnlyRef must wrap an instance of Ref.")
         self._target_ref = target_ref
 
     @property
-    def value(self) -> Any:
+    def value(self) -> T:
         """只读访问底层 Ref 的值."""
         return self._target_ref.value
 

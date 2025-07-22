@@ -4,13 +4,12 @@ import json
 import asyncio
 import sys
 import os
+from typing import Any
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cognihub_pyeffectref import Ref, ReactiveDict, effect
-
-
 class TestReactiveDict(unittest.TestCase):
     """ReactiveDict 类的基本测试"""
 
@@ -41,20 +40,20 @@ class TestReactiveDict(unittest.TestCase):
         self.assertEqual(len(rd), 3)
 
     def test_dot_notation_access(self) -> None:
-        """测试点语法访问"""
+        """测试字典风格访问（原点语法访问已移除）"""
         data = {"username": "bob", "score": 100}
         rd: ReactiveDict = ReactiveDict(data)
         
         # 获取值
-        self.assertEqual(rd.username, "bob")
-        self.assertEqual(rd.score, 100)
+        self.assertEqual(rd["username"], "bob")
+        self.assertEqual(rd["score"], 100)
         
         # 设置值
-        rd.username = "charlie"
-        rd.level = 5
+        rd["username"] = "charlie"
+        rd["level"] = 5
         
-        self.assertEqual(rd.username, "charlie")
-        self.assertEqual(rd.level, 5)
+        self.assertEqual(rd["username"], "charlie")
+        self.assertEqual(rd["level"], 5)
 
     def test_nested_dict_support(self) -> None:
         """测试嵌套字典支持"""
@@ -74,18 +73,29 @@ class TestReactiveDict(unittest.TestCase):
         }
         rd: ReactiveDict = ReactiveDict(data)
         
-        # 访问嵌套值
-        self.assertEqual(rd.user.info.name, "Alice")
-        self.assertEqual(rd.user.info.age, 25)
-        self.assertEqual(rd.user.preferences.theme, "dark")
-        self.assertEqual(rd.settings.debug, True)
+        # 访问嵌套值 - 使用字典风格访问
+        user_dict = rd["user"]
+        self.assertIsInstance(user_dict, ReactiveDict)
+        
+        info_dict = user_dict["info"]
+        self.assertIsInstance(info_dict, ReactiveDict)
+        self.assertEqual(info_dict["name"], "Alice")
+        self.assertEqual(info_dict["age"], 25)
+        
+        preferences_dict = user_dict["preferences"]
+        self.assertIsInstance(preferences_dict, ReactiveDict)
+        self.assertEqual(preferences_dict["theme"], "dark")
+        
+        settings_dict = rd["settings"]
+        self.assertIsInstance(settings_dict, ReactiveDict)
+        self.assertEqual(settings_dict["debug"], True)
         
         # 修改嵌套值
-        rd.user.info.name = "Bob"
-        rd.user.preferences.theme = "light"
+        user_dict["info"]["name"] = "Bob"
+        user_dict["preferences"]["theme"] = "light"
         
-        self.assertEqual(rd.user.info.name, "Bob")
-        self.assertEqual(rd.user.preferences.theme, "light")
+        self.assertEqual(user_dict["info"]["name"], "Bob")
+        self.assertEqual(user_dict["preferences"]["theme"], "light")
 
     def test_to_dict_conversion(self) -> None:
         """测试转换为普通字典"""
@@ -99,8 +109,9 @@ class TestReactiveDict(unittest.TestCase):
         rd: ReactiveDict = ReactiveDict(data)
         
         # 修改一些值
-        rd.simple = "modified"
-        rd.nested.inner = "changed"
+        rd["simple"] = "modified"
+        nested_dict = rd["nested"]
+        nested_dict["inner"] = "changed"
         
         result = rd.to_dict()
         expected = {
@@ -126,8 +137,7 @@ class TestReactiveDict(unittest.TestCase):
         self.assertEqual(len(rd), 2)
         self.assertNotIn("b", rd)
         
-        with self.assertRaises(AttributeError):
-            _ = rd.b
+        # ReactiveDict 不再支持点符号访问，删除操作仅支持括号符号
         
         with self.assertRaises(KeyError):
             _ = rd["b"]
@@ -171,7 +181,10 @@ class TestReactiveDict(unittest.TestCase):
         
         # 通过 Ref 修改值
         name_ref.value = "Bob"
-        self.assertEqual(rd.user.profile.name, "Bob")
+        # 使用字典访问验证修改
+        user_dict = rd["user"]
+        profile_dict = user_dict["profile"]
+        self.assertEqual(profile_dict["name"], "Bob")
 
     def test_get_raw_ref_errors(self) -> None:
         """测试获取 Ref 时的错误情况"""
@@ -208,14 +221,14 @@ class TestReactiveDict(unittest.TestCase):
         def track_counter() -> None:
             nonlocal call_count
             call_count += 1
-            tracked_values.append(rd.counter)
+            tracked_values.append(rd["counter"])
 
         track_counter()
         self.assertEqual(call_count, 1)
         self.assertEqual(tracked_values[0], 0)
 
         # 修改值应该触发 effect
-        rd.counter = 5
+        rd["counter"] = 5
         self.assertEqual(call_count, 2)
         self.assertEqual(tracked_values[1], 5)
 
@@ -235,14 +248,18 @@ class TestReactiveDict(unittest.TestCase):
         def track_score() -> None:
             nonlocal call_count
             call_count += 1
-            tracked_scores.append(rd.user.profile.score)
+            user_dict = rd["user"]
+            profile_dict = user_dict["profile"]
+            tracked_scores.append(profile_dict["score"])
 
         track_score()
         self.assertEqual(call_count, 1)
         self.assertEqual(tracked_scores[0], 100)
 
         # 修改嵌套值
-        rd.user.profile.score = 200
+        user_dict = rd["user"]
+        profile_dict = user_dict["profile"]
+        profile_dict["score"] = 200
         self.assertEqual(call_count, 2)
         self.assertEqual(tracked_scores[1], 200)
 
@@ -259,8 +276,8 @@ class TestReactiveDict(unittest.TestCase):
         temp_ref = rd.get_raw_ref("temperature")
         temp_ref.subscribe(on_temp_change)
         
-        rd.temperature = 25.0
-        rd.temperature = 30.0
+        rd["temperature"] = 25.0
+        rd["temperature"] = 30.0
         
         self.assertEqual(len(changes), 2)
         self.assertEqual(changes[0], (20.0, 25.0))
@@ -278,14 +295,19 @@ class TestReactiveDict(unittest.TestCase):
         }
         rd: ReactiveDict = ReactiveDict(data)
         
-        self.assertEqual(rd.array, [1, 2, 3])
-        self.assertEqual(rd.tuple, (4, 5, 6))
-        self.assertEqual(rd.nested.list, ["a", "b", "c"])
-        self.assertEqual(rd.nested.dict, {"x": 1, "y": 2})
+        self.assertEqual(rd["array"], [1, 2, 3])
+        self.assertEqual(rd["tuple"], (4, 5, 6))
+        nested_dict = rd["nested"]
+        self.assertIsInstance(nested_dict, ReactiveDict)
+        self.assertEqual(nested_dict["list"], ["a", "b", "c"])
+        dict_dict = nested_dict["dict"]
+        self.assertIsInstance(dict_dict, ReactiveDict)
+        self.assertEqual(dict_dict["x"], 1)
+        self.assertEqual(dict_dict["y"], 2)
         
         # 修改复杂类型
-        rd.array = [7, 8, 9]
-        self.assertEqual(rd.array, [7, 8, 9])
+        rd["array"] = [7, 8, 9]
+        self.assertEqual(rd["array"], [7, 8, 9])
 
     def test_replacing_nested_dict(self) -> None:
         """测试替换嵌套字典"""
@@ -293,33 +315,35 @@ class TestReactiveDict(unittest.TestCase):
         rd: ReactiveDict = ReactiveDict(data)
         
         # 替换整个嵌套字典
-        rd.config = {"debug": False, "port": 3000, "ssl": True}
-        self.assertIsInstance(rd.config, ReactiveDict)
-        self.assertIsInstance(rd.config["debug"], bool)
-        self.assertEqual(rd.config.debug, False)
-        self.assertEqual(rd.config.port, 3000)
-        self.assertEqual(rd.config.ssl, True)
+        rd["config"] = {"debug": False, "port": 3000, "ssl": True}
+        config_dict = rd["config"]
+        self.assertIsInstance(config_dict, ReactiveDict)
+        self.assertIsInstance(config_dict["debug"], bool)
+        self.assertEqual(config_dict["debug"], False)
+        self.assertEqual(config_dict["port"], 3000)
+        self.assertEqual(config_dict["ssl"], True)
 
 
 class TestReactiveDictClassMethods(unittest.TestCase):
     """测试 ReactiveDict 的类方法"""
 
-    def test_from_dict(self) -> None:
-        """测试从字典创建"""
+    def test_constructor_from_dict(self) -> None:
+        """测试从字典直接创建（构造函数）"""
         data = {"name": "test", "value": 42}
-        rd: ReactiveDict = ReactiveDict.from_dict(data)
+        rd: ReactiveDict = ReactiveDict(data)
         
-        self.assertEqual(rd.name, "test")
-        self.assertEqual(rd.value, 42)
+        self.assertEqual(rd["name"], "test")
+        self.assertEqual(rd["value"], 42)
 
     def test_from_json(self) -> None:
         """测试从 JSON 字符串创建"""
         json_str = '{"user": {"name": "Alice", "age": 30}, "active": true}'
         rd: ReactiveDict = ReactiveDict.from_json(json_str)
         
-        self.assertEqual(rd.user.name, "Alice")
-        self.assertEqual(rd.user.age, 30)
-        self.assertEqual(rd.active, True)
+        user_dict = rd["user"]
+        self.assertEqual(user_dict["name"], "Alice")
+        self.assertEqual(user_dict["age"], 30)
+        self.assertEqual(rd["active"], True)
 
     def test_from_json_invalid(self) -> None:
         """测试无效 JSON 的情况"""
@@ -347,14 +371,14 @@ class TestReactiveDictAsync(unittest.IsolatedAsyncioTestCase):
         async def async_track_status() -> None:
             nonlocal call_count
             call_count += 1
-            tracked_status.append(rd.status)
+            tracked_status.append(rd["status"])
             await asyncio.sleep(0.01)
 
         await async_track_status()
         self.assertEqual(call_count, 1)
         self.assertEqual(tracked_status[0], "idle")
 
-        rd.status = "running"
+        rd["status"] = "running"
         await asyncio.sleep(0.1)  # 等待异步回调
         self.assertEqual(call_count, 2)
         self.assertEqual(tracked_status[1], "running")
@@ -373,7 +397,8 @@ class TestReactiveDictAsync(unittest.IsolatedAsyncioTestCase):
         value_ref = rd.get_raw_ref("data.value")
         value_ref.subscribe(async_subscriber)
         
-        rd.data.value = 10
+        data_dict = rd["data"]
+        data_dict["value"] = 10
         await asyncio.sleep(0.1)  # 等待异步回调
         
         self.assertEqual(len(async_calls), 1)
@@ -400,13 +425,19 @@ class TestReactiveDictIntegration(unittest.TestCase):
         rd: ReactiveDict = ReactiveDict(data)
         
         # 深层访问和修改
-        self.assertEqual(rd.app.config.database.host, "localhost")
-        rd.app.config.database.host = "production.db.com"
-        self.assertEqual(rd.app.config.database.host, "production.db.com")
+        app_dict = rd["app"]
+        config_dict = app_dict["config"]
+        database_dict = config_dict["database"]
+        self.assertEqual(database_dict["host"], "localhost")
+        database_dict["host"] = "production.db.com"
+        self.assertEqual(database_dict["host"], "production.db.com")
         
         # 添加新的嵌套结构
-        rd.app.state.sessions = {"session1": {"user_id": 123}}
-        self.assertEqual(rd.app.state.sessions.session1.user_id, 123)
+        state_dict = app_dict["state"]
+        state_dict["sessions"] = {"session1": {"user_id": 123}}
+        sessions_dict = state_dict["sessions"]
+        session1_dict = sessions_dict["session1"]
+        self.assertEqual(session1_dict["user_id"], 123)
         
         # 验证转换为字典的正确性
         result = rd.to_dict()
@@ -426,19 +457,19 @@ class TestReactiveDictIntegration(unittest.TestCase):
         def track_counter() -> None:
             nonlocal counter_calls
             counter_calls += 1
-            _ = rd.counter
+            _ = rd["counter"]
         
         @effect
         def track_multiplier() -> None:
             nonlocal multiplier_calls
             multiplier_calls += 1
-            _ = rd.multiplier
+            _ = rd["multiplier"]
         
         @effect
         def track_product() -> None:
             nonlocal product_calls
             product_calls += 1
-            _ = rd.counter * rd.multiplier
+            _ = rd["counter"] * rd["multiplier"]
         
         # 初始调用
         track_counter()
@@ -450,13 +481,13 @@ class TestReactiveDictIntegration(unittest.TestCase):
         self.assertEqual(product_calls, 1)
         
         # 修改 counter，应该触发 counter 和 product effects
-        rd.counter = 5
+        rd["counter"] = 5
         self.assertEqual(counter_calls, 2)
         self.assertEqual(multiplier_calls, 1)  # 不变
         self.assertEqual(product_calls, 2)
         
         # 修改 multiplier，应该触发 multiplier 和 product effects
-        rd.multiplier = 3
+        rd["multiplier"] = 3
         self.assertEqual(counter_calls, 2)  # 不变
         self.assertEqual(multiplier_calls, 2)
         self.assertEqual(product_calls, 3)
@@ -466,16 +497,18 @@ class TestReactiveDictIntegration(unittest.TestCase):
         data = {"user": {"name": "Alice", "settings": {"theme": "dark"}}}
         rd: ReactiveDict = ReactiveDict(data)
         
-        # 混合使用点语法和字典语法
-        self.assertEqual(rd.user["name"], "Alice")
-        self.assertEqual(rd["user"].settings.theme, "dark")
+        # 混合使用括号访问
+        user_dict = rd["user"]
+        self.assertEqual(user_dict["name"], "Alice")
+        settings_dict = user_dict["settings"]
+        self.assertEqual(settings_dict["theme"], "dark")
         
         # 混合修改方式
-        rd.user["name"] = "Bob"
-        rd["user"].settings["theme"] = "light"
+        user_dict["name"] = "Bob"
+        settings_dict["theme"] = "light"
         
-        self.assertEqual(rd.user.name, "Bob")
-        self.assertEqual(rd.user.settings.theme, "light")
+        self.assertEqual(user_dict["name"], "Bob")
+        self.assertEqual(settings_dict["theme"], "light")
 
     def test_reactive_dict_performance(self) -> None:
         """简单性能测试"""
@@ -492,18 +525,24 @@ class TestReactiveDictIntegration(unittest.TestCase):
         # 测试访问性能
         total = 0
         for i in range(100):
-            total += rd[f"item_{i}"].data.value
+            item_dict = rd[f"item_{i}"]
+            data_dict = item_dict["data"]
+            total += data_dict["value"]
         
         expected_total = sum(i * 2 for i in range(100))
         self.assertEqual(total, expected_total)
         
         # 测试修改性能
         for i in range(50):
-            rd[f"item_{i}"].data.value = i * 3
+            item_dict = rd[f"item_{i}"]
+            data_dict = item_dict["data"]
+            data_dict["value"] = i * 3
         
         # 验证修改结果
         for i in range(50):
-            self.assertEqual(rd[f"item_{i}"].data.value, i * 3)
+            item_dict = rd[f"item_{i}"]
+            data_dict = item_dict["data"]
+            self.assertEqual(data_dict["value"], i * 3)
 
 
 if __name__ == '__main__':

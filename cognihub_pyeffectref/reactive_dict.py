@@ -4,19 +4,15 @@ import collections.abc
 from cognihub_pyeffectref.ref import Ref
 from typing import Any, Dict, Union
 
-# 假设 Ref 和 effect 已经定义在你的模块中,此处不再重复给出代码
-# from your_reactive_module import Ref, effect # 假设的导入路径
-
-# 这是一个泛型,用于在类型提示中表示 ReactiveDict 包装的原始数据类型
-
 
 class ReactiveDict(collections.abc.MutableMapping):
-    """
-    一个通用的响应式字典,能将嵌套的字典/JSON数据转换为Ref包装
+    """一个通用的响应式字典,能将嵌套的字典/JSON数据转换为Ref包装.
+
     支持点语法访问和字典风格访问
     """
 
     def __init__(self, initial_data: Dict[str, Any]):
+        """初始化 ReactiveDict."""
         self._data_refs: Dict[str, Ref] = {}
         self._wrap_data(initial_data)
 
@@ -79,9 +75,6 @@ class ReactiveDict(collections.abc.MutableMapping):
     def __delitem__(self, key: str) -> None:
         """支持删除,移除 Ref"""
         if key in self._data_refs:
-            # 清理 Ref 的订阅者是良好实践,虽然 Ref 自身没有提供公共的 stop 方法
-            # 你可以在 Ref 内部添加一个 deactive 或 clean_up 方法
-            # For now, we just remove the Ref from tracking.
             del self._data_refs[key]
         else:
             raise KeyError(f"'{key}' not found in ReactiveDict.")
@@ -91,7 +84,7 @@ class ReactiveDict(collections.abc.MutableMapping):
 
     def __iter__(self) -> collections.abc.Iterator[str]:
         return iter(self._data_refs)
-    
+
     def __contains__(self, key: object) -> bool:
         """支持 'in' 操作符"""
         return key in self._data_refs
@@ -109,7 +102,7 @@ class ReactiveDict(collections.abc.MutableMapping):
 
     def get_raw_ref(self, key_path: str) -> Ref:
         """通过点分隔路径获取底层 Ref 实例
-        
+
         例如: get_raw_ref('nested_key.item')
         这是主程序修改数据或进行高级订阅的接口
         """
@@ -123,7 +116,7 @@ class ReactiveDict(collections.abc.MutableMapping):
                 if i == len(parts) - 1:
                     return current_data._data_refs[part]
                 else:
-                    # 沿着路径向下,获取 Ref 包装的值（可能是另一个 ReactiveDict）
+                    # 沿着路径向下,获取 Ref 包装的值(可能是另一个 ReactiveDict)
                     current_data = current_data._data_refs[part].value
             else:
                 raise TypeError(f"'{'.'.join(parts[:i])}' is not a ReactiveDict, cannot get '{part}'.")
@@ -137,7 +130,3 @@ class ReactiveDict(collections.abc.MutableMapping):
             raise TypeError("JSON string must represent a dictionary.")
         return cls(data)
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ReactiveDict':
-        """从普通字典创建 ReactiveDict"""
-        return cls(data)
