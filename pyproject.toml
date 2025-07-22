@@ -35,10 +35,11 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = [
-    "mypy>=1.0"
+    "mypy>=2.0.0"
 ]
 test = [
-    "mypy>=1.0"
+    "mypy>=2.0.0",
+    "coverage>=7.9.0"
 ]
 
 [project.urls]
