@@ -91,7 +91,7 @@ class Ref(Generic[T]):
         # 使用 threading.Lock 来保护 _subscribers 集合的并发修改
         self._subscribers_lock = threading.Lock()
         # 订阅者存储为有序列表,以便按注册顺序处理顺序执行的回调
-        self._subscribers: set['EffectWrapper | Callable[[T, T], Any]'] = set()  # 存储订阅此Ref的副作用函数或回调
+        self._subscribers: list['EffectWrapper | Callable[[T, T], Any]'] = []  # 存储订阅此Ref的副作用函数或回调
         self._subscribe_sequential = subscribe_sequential
         self._subscribe_immediate = subscribe_immediate  # 初始化新参数
         if self._subscribe_immediate and self._subscribe_sequential:
@@ -121,7 +121,8 @@ class Ref(Generic[T]):
 
         if current_effect:
             with self._subscribers_lock:
-                self._subscribers.add(current_effect)
+                if current_effect not in self._subscribers:
+                    self._subscribers.append(current_effect)
         return self._value
 
     @value.setter
@@ -139,12 +140,14 @@ class Ref(Generic[T]):
         if not callable(callback_func):
             raise TypeError("Subscriber must be a callable function.")
         with self._subscribers_lock:
-            self._subscribers.add(callback_func)
+            if callback_func not in self._subscribers:
+                self._subscribers.append(callback_func)
         return callback_func
 
     def unsubscribe(self, callback_func: 'EffectWrapper' | Callable[[T, T], Any]) -> None:
         with self._subscribers_lock:
-            self._subscribers.discard(callback_func)
+            if callback_func in self._subscribers:
+                self._subscribers.remove(callback_func)
 
     def _notify_subscribers(self, old_value: T, new_value: T) -> None:
         """

@@ -62,7 +62,7 @@ class ReadOnlyView:
     def __delitem__(self, key: str) -> NoReturn:
         raise TypeError(f"'{self.__class__.__name__}' 对象是只读的,不允许通过键删除项.")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def __call__(self) -> Dict[str, Any]:
         """
         将只读视图的内容转换为普通的 Python 字典.
         """

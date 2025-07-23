@@ -7,13 +7,14 @@ ReadOnlyView 示例
 - 与 ReactiveDict 的配合使用
 - 数据访问和监听
 """
+from cognihub_pyeffectref import ReactiveDict, effect, ReadOnlyRef, ReadOnlyView
 import sys
 import os
 from typing import Protocol, cast, Any
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from cognihub_pyeffectref import ReactiveDict, effect, ReadOnlyRef, ReadOnlyView
+
 
 def basic_readonly_view_example() -> None:
     """演示基本的只读视图使用"""
@@ -28,8 +29,16 @@ def basic_readonly_view_example() -> None:
         'is_active': True
     })
 
+    class UserSchema(Protocol):
+        name: ReadOnlyRef[str]
+        email: ReadOnlyRef[str]
+        age: ReadOnlyRef[int]
+        is_active: ReadOnlyRef[bool]
+
+        def __call__(self) -> dict[str, Any]:
+            ...
     # 创建只读视图
-    user_view = ReadOnlyView(user_data)
+    user_view = cast(UserSchema, ReadOnlyView(user_data))
 
     print("📋 用户数据创建完成")
     print(f"  姓名: {user_view.name.value}")
@@ -40,14 +49,26 @@ def basic_readonly_view_example() -> None:
     # 演示只读特性
     print("\n🔒 测试只读特性:")
     try:
-        user_view.name = '李四'
+        user_view.name = '李四' # type: ignore
     except AttributeError as e:
-        print(f"  ✅ 正确阻止了写入操作: {e}")
+        print(f"  ✅ 正确阻止了属性写入操作: {e}")
 
     try:
-        user_view['email'] = 'lisi@example.com'
+        user_view['email'] = 'lisi@example.com'  # type: ignore
     except TypeError as e:
         print(f"  ✅ 正确阻止了字典写入操作: {e}")
+        
+        print("\n🔒 测试只读特性:")
+    # 因为端点字段都是ReadOnlyRef类型,所以本身也无法修改
+    try:
+        user_view.name.value = '李四' # type: ignore
+    except AttributeError as e:
+        print(f"  ✅ 正确阻止了属性value写入操作: {e}")
+
+    try:
+        user_view['email'].value = 'lisi@example.com'  # type: ignore
+    except TypeError as e:
+        print(f"  ✅ 正确阻止了字典value写入操作: {e}")
 
     # 演示响应式监听
     print("\n🔊 设置响应式监听:")
@@ -71,7 +92,7 @@ def basic_readonly_view_example() -> None:
     user_data.age = 26
 
     print("\n📊 当前用户信息:")
-    user_dict = user_view.to_dict()
+    user_dict = user_view()
     for key, value in user_dict.items():
         print(f"  {key}: {value}")
 
@@ -105,7 +126,7 @@ def nested_data_example() -> None:
         language: ReadOnlyRef[str]
         font_size: ReadOnlyRef[int]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class ApiConfig(Protocol):
@@ -113,7 +134,7 @@ def nested_data_example() -> None:
         timeout: ReadOnlyRef[int]
         retry_count: ReadOnlyRef[int]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class FeaturesConfig(Protocol):
@@ -121,7 +142,7 @@ def nested_data_example() -> None:
         analytics: ReadOnlyRef[bool]
         notifications: ReadOnlyRef[bool]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class AppConfig(Protocol):
@@ -129,7 +150,7 @@ def nested_data_example() -> None:
         api: ApiConfig
         features: FeaturesConfig
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     # 创建只读视图
@@ -169,7 +190,7 @@ def nested_data_example() -> None:
     app_config.features.debug_mode = True
 
     print("\n📋 完整配置信息:")
-    config_dict = config_view.to_dict()
+    config_dict = config_view()
     for section, settings in config_dict.items():
         print(f"  {section}:")
         for key, value in settings.items():
@@ -205,7 +226,7 @@ def dashboard_data_example() -> None:
         active_users: ReadOnlyRef[int]
         new_signups: ReadOnlyRef[int]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class SalesStats(Protocol):
@@ -213,7 +234,7 @@ def dashboard_data_example() -> None:
         orders_count: ReadOnlyRef[int]
         avg_order_value: ReadOnlyRef[float]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class SystemStatus(Protocol):
@@ -221,7 +242,7 @@ def dashboard_data_example() -> None:
         memory_usage: ReadOnlyRef[float]
         disk_usage: ReadOnlyRef[float]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class BackendData(Protocol):
@@ -229,7 +250,7 @@ def dashboard_data_example() -> None:
         sales_stats: SalesStats
         system_status: SystemStatus
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     print("🎯 创建专门的数据视图:")
@@ -299,7 +320,7 @@ def permission_based_views_example() -> None:
         can_read_comments: ReadOnlyRef[bool]
         can_read_profiles: ReadOnlyRef[bool]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class AdminPermissions(Protocol):
@@ -307,7 +328,7 @@ def permission_based_views_example() -> None:
         can_manage_content: ReadOnlyRef[bool]
         can_view_analytics: ReadOnlyRef[bool]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class PublishPermissions(Protocol):
@@ -315,7 +336,7 @@ def permission_based_views_example() -> None:
         can_edit_posts: ReadOnlyRef[bool]
         can_delete_posts: ReadOnlyRef[bool]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class UserPermissions(Protocol):
@@ -323,7 +344,7 @@ def permission_based_views_example() -> None:
         admin_permissions: AdminPermissions
         publish_permissions: PublishPermissions
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     print("🎭 创建基于权限的视图:")
@@ -408,14 +429,14 @@ def complex_dashboard_example() -> None:
         bounce_rate: ReadOnlyRef[float]
         avg_session_duration: ReadOnlyRef[float]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class Geographic(Protocol):
         top_countries: ReadOnlyRef[list[str]]
         country_stats: ReadOnlyRef[dict[str, dict[str, Any]]]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class DeviceStats(Protocol):
@@ -423,7 +444,7 @@ def complex_dashboard_example() -> None:
         desktop: ReadOnlyRef[int]
         tablet: ReadOnlyRef[int]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class Conversion(Protocol):
@@ -431,7 +452,7 @@ def complex_dashboard_example() -> None:
         purchase_rate: ReadOnlyRef[float]
         cart_abandonment_rate: ReadOnlyRef[float]
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     class DashboardData(Protocol):
@@ -440,7 +461,7 @@ def complex_dashboard_example() -> None:
         device_stats: DeviceStats
         conversion: Conversion
 
-        def to_dict(self) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             ...
 
     # 创建专门的视图

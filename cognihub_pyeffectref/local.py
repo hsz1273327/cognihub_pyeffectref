@@ -1,6 +1,6 @@
 import threading
 from contextvars import ContextVar
-from typing import Optional, TypeVar, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .effect import EffectWrapper

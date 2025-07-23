@@ -84,8 +84,7 @@ class TestCreateActionsDict(unittest.TestCase):
         def normal_func() -> str:
             return "normal"
 
-        def lambda_func() -> str: return "lambda"  # noqa: E731
-        functions: List[Callable[..., Any]] = [normal_func, lambda_func]
+        functions: List[Callable[..., Any]] = [normal_func, lambda: "lambda"]
 
         # 捕获警告
         with warnings.catch_warnings(record=True) as w:
@@ -136,9 +135,9 @@ class TestCreateActionsDict(unittest.TestCase):
         def func2() -> str:
             return "func2"
 
-        def lambda_func(x:int)->int: return x * 2  # noqa: E731
+
         non_callable = "string"
-        functions: list = [func1, lambda_func, func2, non_callable] 
+        functions: list = [func1, lambda x:x * 2, func2, non_callable]
 
         # 捕获警告
         with warnings.catch_warnings(record=True) as w:
