@@ -10,12 +10,12 @@ ReactiveDict 基础示例
 """
 import sys
 import os
-from typing import Dict, Any, List, Optional, TypedDict
+from typing import  List, TypedDict
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from cognihub_pyeffectref import ReactiveDict, effect, Ref
+from cognihub_pyeffectref import ReactiveDict, effect
 
 
 # 定义类型化字典结构

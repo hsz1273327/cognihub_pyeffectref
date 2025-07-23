@@ -10,4 +10,4 @@ from .effect import effect
 from .reactive_dict import ReactiveDict
 from .view import ReadOnlyView
 
-__all__ = ["Ref", "ReadOnlyRef", "effect", "ReactiveDict"]
+__all__ = ["Ref", "ReadOnlyRef", "effect", "ReactiveDict", "ReadOnlyView"]

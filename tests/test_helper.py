@@ -1,13 +1,13 @@
 """helper.py 模块的测试"""
+from cognihub_pyeffectref.helper import create_actions_dict
 import unittest
 import warnings
 import sys
 import os
+from typing import Callable, Any, List
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from cognihub_pyeffectref.helper import create_actions_dict
 
 
 class TestCreateActionsDict(unittest.TestCase):
@@ -15,16 +15,16 @@ class TestCreateActionsDict(unittest.TestCase):
 
     def test_basic_function_list_to_dict(self) -> None:
         """测试基本的函数列表转换为字典"""
-        def func1():
+        def func1() -> str:
             return "result1"
 
-        def func2():
+        def func2() -> str:
             return "result2"
 
-        def func3():
+        def func3() -> str:
             return "result3"
-
-        functions = [func1, func2, func3]
+        functions: List[Callable[..., Any]] = [func1, func2, func3]
+        result = create_actions_dict(functions)
         result = create_actions_dict(functions)
 
         # 检查结果字典
@@ -53,12 +53,12 @@ class TestCreateActionsDict(unittest.TestCase):
 
         def greet(name: str, prefix: str = "Hello") -> str:
             return f"{prefix}, {name}!"
-
-        functions = [add, multiply, greet]
+        functions: List[Callable[..., Any]] = [add, multiply, greet]
+        result = create_actions_dict(functions)
         result = create_actions_dict(functions)
 
         self.assertEqual(len(result), 3)
-        
+
         # 测试带参数的函数调用
         self.assertEqual(result["add"](3, 4), 7)
         self.assertEqual(result["multiply"](2.5, 4.0), 10.0)
@@ -66,7 +66,6 @@ class TestCreateActionsDict(unittest.TestCase):
         self.assertEqual(result["greet"]("Bob", "Hi"), "Hi, Bob!")
 
     def test_empty_function_list(self) -> None:
-        """测试空函数列表"""
         result = create_actions_dict([])
         self.assertEqual(result, {})
 
@@ -74,9 +73,8 @@ class TestCreateActionsDict(unittest.TestCase):
         """测试单个函数"""
         def single_func() -> str:
             return "single"
-
         result = create_actions_dict([single_func])
-        
+
         self.assertEqual(len(result), 1)
         self.assertIn("single_func", result)
         self.assertEqual(result["single_func"](), "single")
@@ -86,15 +84,14 @@ class TestCreateActionsDict(unittest.TestCase):
         def normal_func() -> str:
             return "normal"
 
-        lambda_func = lambda: "lambda"  # noqa: E731
+        def lambda_func() -> str: return "lambda"  # noqa: E731
+        functions: List[Callable[..., Any]] = [normal_func, lambda_func]
 
-        functions = [normal_func, lambda_func]
-        
         # 捕获警告
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             result = create_actions_dict(functions)
-            
+
             # 检查警告
             self.assertEqual(len(w), 1)
             self.assertTrue(issubclass(w[0].category, UserWarning))
@@ -112,17 +109,16 @@ class TestCreateActionsDict(unittest.TestCase):
 
         non_callable = "not a function"
         another_non_callable = 42
-
-        functions = [valid_func, non_callable, another_non_callable]  # type: ignore
+        functions: list = [valid_func, non_callable, another_non_callable]
 
         # 捕获警告
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             result = create_actions_dict(functions)
-            
+
             # 检查警告数量
             self.assertEqual(len(w), 2)
-            
+
             # 检查警告内容
             for warning in w:
                 self.assertTrue(issubclass(warning.category, UserWarning))
@@ -140,16 +136,15 @@ class TestCreateActionsDict(unittest.TestCase):
         def func2() -> str:
             return "func2"
 
-        lambda_func = lambda x: x * 2  # noqa: E731
+        def lambda_func(x:int)->int: return x * 2  # noqa: E731
         non_callable = "string"
-
-        functions = [func1, lambda_func, func2, non_callable]  # type: ignore
+        functions: list = [func1, lambda_func, func2, non_callable] 
 
         # 捕获警告
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             result = create_actions_dict(functions)
-            
+
             # 应该有2个警告
             self.assertEqual(len(w), 2)
 
@@ -175,7 +170,8 @@ class TestCreateActionsDict(unittest.TestCase):
                 return "class"
 
         instance = TestClass()
-        functions = [instance.method1, TestClass.static_method, TestClass.class_method]
+        functions: List[Callable[..., Any]] = [instance.method1, TestClass.static_method, TestClass.class_method]
+        result = create_actions_dict(functions)
         result = create_actions_dict(functions)
 
         self.assertEqual(len(result), 3)

@@ -1,25 +1,7 @@
 """ReactiveDict的视图"""
 from cognihub_pyeffectref.ref import ReadOnlyRef
 from cognihub_pyeffectref.reactive_dict import ReactiveDict
-from typing import Any, Dict, NoReturn, Union, Callable, Optional
-
-
-class ActionExecutor:
-    """当 view()不带参数调用时返回的对象。
-    允许通过点语法执行已注册的 action(例如 config().action_name()).
-    """
-    
-    def __init__(self, allowed_actions: Dict[str, Callable[..., Any]]):
-        """初始化 ActionExecutor."""
-        self._allowed_actions = allowed_actions
-
-    def __getattr__(self, name: str) -> Any:
-        """通过点语法执行 action"""
-        if name in self._allowed_actions:
-            action_func = self._allowed_actions[name]
-            return action_func  # 返回函数本身,让调用者执行
-        raise AttributeError(f"Action '{name}' not found or not allowed")
-
+from typing import Any, Dict, NoReturn, Union, Callable
 
 class ReadOnlyView:
     """提供 ReactiveDict 的只读视图.
@@ -91,20 +73,3 @@ class ReadOnlyView:
 
     def __iter__(self) -> Any:
         return iter(self._reactive_dict)
-
-    # Action 注册和执行系统
-    def __call__(self, action_name: Optional[str] = None) -> Union[ActionExecutor, Callable]:
-        """
-        ReadOnlyView 的调用接口.
-        - view() -> 返回 ActionExecutor，允许执行注册的 action
-        - view('action_name') -> 装饰器，注册 action
-        """
-        if action_name is None:
-            # 无参数调用，返回 ActionExecutor
-            return ActionExecutor(self._allowed_actions)
-        else:
-            # 有参数调用，作为装饰器使用
-            def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-                self._allowed_actions[action_name] = func
-                return func  # 返回原函数，不修改
-            return decorator

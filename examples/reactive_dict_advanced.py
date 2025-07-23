@@ -10,14 +10,12 @@ ReactiveDict 高级示例
 """
 import sys
 import os
-from typing import Dict, Any, List, Optional, Union
-from dataclasses import dataclass
 from enum import Enum
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from cognihub_pyeffectref import ReactiveDict, effect, Ref
+from cognihub_pyeffectref import ReactiveDict, effect
 
 
 # 定义复杂的类型结构
