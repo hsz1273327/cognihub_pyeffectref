@@ -107,7 +107,7 @@ class TestRef(unittest.TestCase):
         for thread in threads:
             thread.join()
 
-        # 由于线程安全的实现，最终值应该是 500
+        # 由于线程安全的实现,最终值应该是 500
         self.assertEqual(ref.value, 500)
 
     def test_ref_no_change_no_notify(self) -> None:
@@ -474,7 +474,7 @@ class TestRefInitializationOptions(unittest.TestCase):
 
             # immediate 应该优先
             self.assertTrue(ref._subscribe_immediate)
-            self.assertTrue(ref._subscribe_sequential)  # 仍然为 True，但会被忽略
+            self.assertTrue(ref._subscribe_sequential)  # 仍然为 True,但会被忽略
 
     def test_default_initialization(self) -> None:
         """测试默认初始化参数"""
@@ -585,12 +585,12 @@ class TestRefSubscribeImmediateBehavior(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0], "callback: 0->1")
 
-        # 应该有明显的延迟（表明在当前线程中执行）
+        # 应该有明显的延迟(表明在当前线程中执行)
         self.assertGreaterEqual(end_time - start_time, 0.01)
 
     def test_subscribe_immediate_overrides_asyncio_executor(self) -> None:
         """测试 subscribe_immediate 覆盖 asyncio 执行器配置"""
-        # 设置 asyncio 执行器，但 subscribe_immediate 应该覆盖它
+        # 设置 asyncio 执行器,但 subscribe_immediate 应该覆盖它
         async def run_test()->None:
             Ref._global_sync_executor_config = 'asyncio'
             ref = Ref(0, subscribe_immediate=True)
@@ -607,17 +607,17 @@ class TestRefSubscribeImmediateBehavior(unittest.TestCase):
 
             main_thread_id = threading.get_ident()
             start_time = time.time()
-            ref.value = 1  # 应该在当前线程中同步执行，而不是 asyncio.to_thread
+            ref.value = 1  # 应该在当前线程中同步执行,而不是 asyncio.to_thread
             end_time = time.time()
 
-            # 回调应该立即执行，不需要等待 asyncio.to_thread
+            # 回调应该立即执行,不需要等待 asyncio.to_thread
             self.assertEqual(len(calls), 1)
             self.assertEqual(calls[0], "callback: 0->1")
 
-            # 应该有明显的延迟（表明在当前线程中同步执行）
+            # 应该有明显的延迟(表明在当前线程中同步执行)
             self.assertGreaterEqual(end_time - start_time, 0.02)
 
-            # 应该在主线程中执行，而不是线程池中
+            # 应该在主线程中执行,而不是线程池中
             self.assertEqual(execution_thread_id, main_thread_id)
 
         asyncio.run(run_test())
@@ -643,17 +643,17 @@ class TestRefSubscribeImmediateBehavior(unittest.TestCase):
 
             main_thread_id = threading.get_ident()
             start_time = time.time()
-            ref.value = 1  # 应该在当前线程中同步执行，而不是提交到执行器
+            ref.value = 1  # 应该在当前线程中同步执行,而不是提交到执行器
             end_time = time.time()
 
-            # 回调应该立即执行，不需要等待执行器
+            # 回调应该立即执行,不需要等待执行器
             self.assertEqual(len(calls), 1)
             self.assertEqual(calls[0], "callback: 0->1")
 
-            # 应该有明显的延迟（表明在当前线程中同步执行）
+            # 应该有明显的延迟(表明在当前线程中同步执行)
             self.assertGreaterEqual(end_time - start_time, 0.02)
 
-            # 应该在主线程中执行，而不是线程池中
+            # 应该在主线程中执行,而不是线程池中
             self.assertEqual(execution_thread_id, main_thread_id)
 
         finally:
@@ -694,16 +694,16 @@ class TestRefSubscribeImmediateBehavior(unittest.TestCase):
         self.assertIn("callback2: 0->1", calls)
         self.assertIn("callback3: 0->1", calls)
 
-        # 应该按注册顺序执行（因为都在当前线程中）
+        # 应该按注册顺序执行(因为都在当前线程中)
         self.assertEqual(execution_order, ["callback1", "callback2", "callback3"])
 
-        # 应该有累积的延迟（表明所有回调都在当前线程中顺序执行）
+        # 应该有累积的延迟(表明所有回调都在当前线程中顺序执行)
         self.assertGreaterEqual(end_time - start_time, 0.02)
 
     def test_subscribe_immediate_precedence_over_sequential(self) -> None:
         """测试 subscribe_immediate 优先级高于 subscribe_sequential"""
         Ref._global_sync_executor_config = 'asyncio'
-        # 同时设置两个参数，immediate 应该优先
+        # 同时设置两个参数,immediate 应该优先
         ref = Ref(0, subscribe_immediate=True, subscribe_sequential=True)
         calls = []
         execution_thread_id = None
@@ -718,14 +718,14 @@ class TestRefSubscribeImmediateBehavior(unittest.TestCase):
 
         main_thread_id = threading.get_ident()
         start_time = time.time()
-        ref.value = 1  # 应该立即执行，而不是收集到 sequential 列表中
+        ref.value = 1  # 应该立即执行,而不是收集到 sequential 列表中
         end_time = time.time()
 
         # 回调应该立即执行
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0], "callback: 0->1")
 
-        # 应该有延迟（表明在当前线程中同步执行）
+        # 应该有延迟(表明在当前线程中同步执行)
         self.assertGreaterEqual(end_time - start_time, 0.02)
 
         # 应该在主线程中执行
@@ -800,8 +800,8 @@ class TestRefSubscribeSequentialBehavior(unittest.TestCase):
             self.assertIn("callback2: 0->1", calls)
             self.assertIn("callback3: 0->1", calls)
 
-            # 注意：在 asyncio.to_thread 环境下，由于线程调度的不确定性，
-            # 无法严格保证执行顺序，但重要的是所有回调都被执行了
+            # 注意:在 asyncio.to_thread 环境下,由于线程调度的不确定性,
+            # 无法严格保证执行顺序,但重要的是所有回调都被执行了
 
         # 在 asyncio 事件循环中运行测试
         asyncio.run(run_test())
@@ -849,7 +849,7 @@ class TestRefSubscribeSequentialBehavior(unittest.TestCase):
             self.assertIn("callback2: 0->1", calls)
             self.assertIn("callback3: 0->1", calls)
 
-            # 现在应该能保证执行顺序了（因为修复了 set -> list 的问题）
+            # 现在应该能保证执行顺序了(因为修复了 set -> list 的问题)
             self.assertEqual(execution_order, ["callback1", "callback2", "callback3"])
 
         finally:
@@ -892,7 +892,7 @@ class TestRefValuePropertyBehavior(unittest.TestCase):
         """测试在没有当前 effect 的情况下获取值"""
         ref = Ref(42)
 
-        # 直接访问，不在 effect 中
+        # 直接访问,不在 effect 中
         value = ref.value
         self.assertEqual(value, 42)
 
@@ -1051,7 +1051,7 @@ class TestRefWithComplexTypes(unittest.TestCase):
 
         obj1 = CustomObject(1)
         obj2 = CustomObject(2)
-        obj3 = CustomObject(1)  # 等于 obj1，但是不同的引用
+        obj3 = CustomObject(1)  # 等于 obj1,但是不同的引用
 
         ref = Ref(obj1)
         calls = []
@@ -1065,14 +1065,14 @@ class TestRefWithComplexTypes(unittest.TestCase):
         ref.value = obj2
         self.assertEqual(len(calls), 1)
 
-        # 设置相等但不同引用的对象，由于 Ref 使用 != 比较，
-        # 而 obj2 != obj3 为 True（因为它们的值不同），所以会触发回调
+        # 设置相等但不同引用的对象,由于 Ref 使用 != 比较,
+        # 而 obj2 != obj3 为 True(因为它们的值不同),所以会触发回调
         ref.value = obj3
-        self.assertEqual(len(calls), 2)  # 应该触发回调，因为 obj2 != obj3
+        self.assertEqual(len(calls), 2)  # 应该触发回调,因为 obj2 != obj3
 
-        # 设置同一个对象引用，不应该触发回调
+        # 设置同一个对象引用,不应该触发回调
         ref.value = obj3
-        self.assertEqual(len(calls), 2)  # 仍然是 2，因为是同一个引用
+        self.assertEqual(len(calls), 2)  # 仍然是 2,因为是同一个引用
 
     def test_ref_with_mutable_collections(self) -> None:
         """测试 Ref 处理可变集合"""
@@ -1084,15 +1084,15 @@ class TestRefWithComplexTypes(unittest.TestCase):
 
         ref.subscribe(callback)
 
-        # 修改引用（新列表）
+        # 修改引用(新列表)
         ref.value = [4, 5, 6]
         self.assertEqual(len(calls), 1)
 
-        # 注意：修改现有列表的内容不会触发通知
-        # 因为 Ref 比较的是引用，不是内容
+        # 注意:修改现有列表的内容不会触发通知
+        # 因为 Ref 比较的是引用,不是内容
         current_list = ref.value
         current_list.append(7)
-        # 这不会触发回调，因为引用没有改变
+        # 这不会触发回调,因为引用没有改变
         self.assertEqual(len(calls), 1)
 
 
@@ -1265,17 +1265,17 @@ class TestRefErrorHandlingAdvanced(unittest.TestCase):
             _ = ref.value
             await asyncio.sleep(0.01)
 
-        # 首次执行（在 asyncio 环境外）
-        # 这应该不会崩溃，但会在控制台输出错误信息
+        # 首次执行(在 asyncio 环境外)
+        # 这应该不会崩溃,但会在控制台输出错误信息
         import io
         import contextlib
         
         f = io.StringIO()
         with contextlib.redirect_stdout(f):
-            async_effect()  # 同步调用异步函数，建立依赖
-            ref.value = 1   # 这会尝试调度异步回调，但会失败
+            async_effect()  # 同步调用异步函数,建立依赖
+            ref.value = 1   # 这会尝试调度异步回调,但会失败
 
-        # 不检查具体输出，因为错误处理是打印到 stdout
+        # 不检查具体输出,因为错误处理是打印到 stdout
 
     def test_callback_exception_handling(self) -> None:
         """测试回调函数异常处理"""
@@ -1287,11 +1287,11 @@ class TestRefErrorHandlingAdvanced(unittest.TestCase):
         def working_callback(new_val: int, old_val: int) -> None:
             pass
 
-        # 订阅两个回调，其中一个会失败
+        # 订阅两个回调,其中一个会失败
         ref.subscribe(failing_callback)
         ref.subscribe(working_callback)
 
-        # 这应该不会崩溃，即使有回调失败
+        # 这应该不会崩溃,即使有回调失败
         ref.value = 1
 
     def test_effect_wrapper_exception_handling(self) -> None:
@@ -1309,7 +1309,7 @@ class TestRefErrorHandlingAdvanced(unittest.TestCase):
         except Exception:
             pass  # 预期会有异常
 
-        # 触发重新执行，这应该不会崩溃整个程序
+        # 触发重新执行,这应该不会崩溃整个程序
         ref.value = 1
 
 
@@ -1342,11 +1342,11 @@ class TestRefAsyncContextVarSupport(unittest.IsolatedAsyncioTestCase):
         """测试当不在 asyncio 任务中时回退到 threading.local"""
         ref = Ref(0)
         
-        # 直接访问 value（不在 effect 中）
+        # 直接访问 value(不在 effect 中)
         value = ref.value
         self.assertEqual(value, 0)
         
-        # 确认没有建立依赖（没有订阅者）
+        # 确认没有建立依赖(没有订阅者)
         self.assertEqual(len(ref._subscribers), 0)
 
 

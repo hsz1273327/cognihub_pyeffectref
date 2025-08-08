@@ -2,7 +2,7 @@
 """
 ReadOnlyView 示例
 
-演示 ReadOnlyView 的使用方法，包括：
+演示 ReadOnlyView 的使用方法,包括:
 - 创建只读视图
 - 与 ReactiveDict 的配合使用
 - 数据访问和监听

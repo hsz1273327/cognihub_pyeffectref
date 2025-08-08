@@ -59,7 +59,7 @@ class TestEffect(unittest.TestCase):
         # 停止 effect
         stoppable_effect.stop()
         
-        # 修改值，但 effect 已停止，不应该触发
+        # 修改值,但 effect 已停止,不应该触发
         counter.value = 2
         self.assertEqual(call_count, 2)
 
@@ -127,7 +127,7 @@ class TestEffect(unittest.TestCase):
         self.assertEqual(result, 0)
         self.assertEqual(results[-1], 0)
 
-        # 修改 ref，应该重新执行
+        # 修改 ref,应该重新执行
         ref.value = 5
         self.assertEqual(len(results), 2)
         self.assertEqual(results[-1], 10)  # 5 * 2
@@ -169,7 +169,7 @@ class TestEffect(unittest.TestCase):
         independent_effect()
         self.assertEqual(call_count, 1)
 
-        # 没有依赖，所以不会再次触发
+        # 没有依赖,所以不会再次触发
         # 这个测试主要确保不会崩溃
 
 
@@ -251,7 +251,7 @@ class TestEffectAsync(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(sync_calls), 1)
         self.assertEqual(len(async_calls), 1)
 
-        # 修改值，两个 effect 都应该被触发
+        # 修改值,两个 effect 都应该被触发
         shared_ref.value = 42
         await asyncio.sleep(0.1)  # 等待异步执行
 

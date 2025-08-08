@@ -286,7 +286,7 @@ class TestReadOnlyViewReactivity(unittest.TestCase):
         # 两个视图应该看到相同的数据
         self.assertEqual(count_ref1.value, count_ref2.value)
 
-        # 修改数据后，两个视图都应该看到更新
+        # 修改数据后,两个视图都应该看到更新
         self.reactive_dict["count"] = 100
         self.assertEqual(count_ref1.value, 100)
         self.assertEqual(count_ref2.value, 100)

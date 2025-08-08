@@ -96,7 +96,7 @@ class TestCreateActionsDict(unittest.TestCase):
             self.assertTrue(issubclass(w[0].category, UserWarning))
             self.assertIn("匿名", str(w[0].message))
 
-        # 检查结果：只包含普通函数
+        # 检查结果:只包含普通函数
         self.assertEqual(len(result), 1)
         self.assertIn("normal_func", result)
         self.assertNotIn("<lambda>", result)
@@ -123,7 +123,7 @@ class TestCreateActionsDict(unittest.TestCase):
                 self.assertTrue(issubclass(warning.category, UserWarning))
                 self.assertIn("不是可调用对象", str(warning.message))
 
-        # 检查结果：只包含有效函数
+        # 检查结果:只包含有效函数
         self.assertEqual(len(result), 1)
         self.assertIn("valid_func", result)
 
@@ -147,7 +147,7 @@ class TestCreateActionsDict(unittest.TestCase):
             # 应该有2个警告
             self.assertEqual(len(w), 2)
 
-        # 检查结果：只包含有效的命名函数
+        # 检查结果:只包含有效的命名函数
         self.assertEqual(len(result), 2)
         self.assertIn("func1", result)
         self.assertIn("func2", result)

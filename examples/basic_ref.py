@@ -2,7 +2,7 @@
 """
 基础 Ref 示例
 
-演示 Ref 的基本使用方法，包括：
+演示 Ref 的基本使用方法,包括:
 - 创建和使用 Ref
 - 订阅 Ref 的变化
 - 基本的响应式编程概念
@@ -60,7 +60,7 @@ def ref_subscription_example() -> None:
     temperature.subscribe(on_temperature_change)
     print("✅ 已订阅温度变化")
     
-    # 修改温度值，观察订阅效果
+    # 修改温度值,观察订阅效果
     print("\n🌡️ 开始修改温度...")
     temperature.value = 25.0
     temperature.value = 30.0
@@ -88,7 +88,7 @@ def multiple_subscribers_example() -> None:
         if new_status == "online":
             print(f"  📢 [Notifier] 用户已上线！")
         elif new_status == "offline":
-            print(f"  📢 [Notifier] 用户已下线。")
+            print(f"  📢 [Notifier] 用户已下线.")
     
     def analytics(new_status: str, old_status: str) -> None:
         """分析系统"""
@@ -99,7 +99,7 @@ def multiple_subscribers_example() -> None:
     user_status.subscribe(notifier)
     user_status.subscribe(analytics)
     
-    print("✅ 已设置3个订阅者（Logger、Notifier、Analytics）")
+    print("✅ 已设置3个订阅者(Logger、Notifier、Analytics)")
     
     # 模拟状态变化
     print("\n👤 模拟用户状态变化...")

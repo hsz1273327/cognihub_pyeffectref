@@ -2,7 +2,7 @@
 """
 ReactiveDict 基础示例
 
-演示 ReactiveDict 的基本使用方法，包括：
+演示 ReactiveDict 的基本使用方法,包括:
 - 创建和使用 ReactiveDict
 - 响应式数据访问
 - 与 Effect 的配合使用
@@ -104,7 +104,7 @@ def reactive_dict_with_effects() -> None:
     settings_monitor()
     print("✅ 已创建设置监视 Effect")
     
-    # 修改设置，观察 Effect 的自动响应
+    # 修改设置,观察 Effect 的自动响应
     print("\n🎨 更改主题:")
     settings['theme'] = 'dark'
     
@@ -158,7 +158,7 @@ def product_price_calculator_example() -> None:
     calculate_final_price()
     print("✅ 创建了价格计算 Effect")
     
-    # 修改产品信息，观察 Effect 的自动重新计算
+    # 修改产品信息,观察 Effect 的自动重新计算
     print("🏷️  应用 20% 折扣:")
     product['discount'] = 0.2
     
@@ -376,7 +376,7 @@ def main() -> None:
         print("✨ 所有示例运行完成！")
         print("\n💡 关键要点:")
         print("   1. ReactiveDict 提供响应式的字典功能")
-        print("   2. 与 Effect 完美配合，实现自动响应")
+        print("   2. 与 Effect 完美配合,实现自动响应")
         print("   3. 支持嵌套数据结构")
         print("   4. 支持所有标准字典操作")
         print("   5. 适用于复杂的状态管理和数据绑定场景")

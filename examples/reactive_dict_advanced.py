@@ -2,7 +2,7 @@
 """
 ReactiveDict 高级示例
 
-演示 ReactiveDict 的高级用法，包括：
+演示 ReactiveDict 的高级用法,包括:
 - 复杂的嵌套数据结构
 - 计算属性和派生状态
 - 条件响应和优化技巧
@@ -40,7 +40,7 @@ def advanced_task_management_system() -> None:
     
     # 创建任务管理系统的响应式数据
     task_system = ReactiveDict({
-        'tasks': {'placeholder': 'temp'},  # 临时占位符，稍后替换
+        'tasks': {'placeholder': 'temp'},  # 临时占位符,稍后替换
         'filters': {
             'status': 'all',
             'priority': 'all',
@@ -54,7 +54,7 @@ def advanced_task_management_system() -> None:
         }
     })
     
-    # 清空 tasks，准备添加真实数据
+    # 清空 tasks,准备添加真实数据
     task_system['tasks'] = {}
     
     # 统计数据
@@ -215,7 +215,7 @@ def reactive_shopping_system() -> None:
     
     # 购物车
     cart = ReactiveDict({'placeholder': 0})  # 临时占位符
-    cart.clear()  # 清空，变成真正的空购物车
+    cart.clear()  # 清空,变成真正的空购物车
     
     # 用户信息
     user = ReactiveDict({
@@ -265,7 +265,7 @@ def reactive_shopping_system() -> None:
         if items_count >= discount_rules['bulk_discount_threshold']:
             bulk_discount = subtotal * discount_rules['bulk_discount_rate']
         
-        # 总折扣（取较大值）
+        # 总折扣(取较大值)
         discount_amount = max(vip_discount, bulk_discount)
         
         # 运费计算
@@ -438,7 +438,7 @@ def reactive_form_validation_system() -> None:
         username = account['username']
         username_valid = len(username) >= 3 and username.isalnum()
         if not username_valid and username:
-            account_errors['username'] = '用户名至少3个字符，只能包含字母和数字'
+            account_errors['username'] = '用户名至少3个字符,只能包含字母和数字'
         
         # 密码验证
         password = account['password']
@@ -447,7 +447,7 @@ def reactive_form_validation_system() -> None:
                          any(c.islower() for c in password) and
                          any(c.isdigit() for c in password))
         if not password_valid and password:
-            account_errors['password'] = '密码至少8位，包含大小写字母和数字'
+            account_errors['password'] = '密码至少8位,包含大小写字母和数字'
         
         # 确认密码验证
         confirm_password = account['confirm_password']

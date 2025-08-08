@@ -15,7 +15,7 @@ class ReadOnlyView:
             raise TypeError("ReadOnlyView 必须包装一个 ReactiveDict 实例.")
         
         self._reactive_dict = reactive_dict
-        # _allowed_actions 现在直接存储函数，用于此特定实例
+        # _allowed_actions 现在直接存储函数,用于此特定实例
         self._allowed_actions: Dict[str, Callable[..., Any]] = {}
 
     def __getattr__(self, name: str) -> Union['ReadOnlyView', ReadOnlyRef[Any]]:

@@ -85,7 +85,7 @@ class Ref(Generic[T]):
                                   此 Ref 实例的所有同步 subscribe 回调将被**收集并整合为单个任务**,
                                   然后提交到全局 Executor 中**顺序执行**.这**不阻塞主线程**.
                                   如果为 False (默认),则同步 subscribe 回调将遵循全局 
-                                  configure_sync_task_executor() 的设置（可以并发执行,或在未配置 Executor 时同步阻塞）.
+                                  configure_sync_task_executor() 的设置(可以并发执行,或在未配置 Executor 时同步阻塞).
         """
         self._value = initial_value
         # 使用 threading.Lock 来保护 _subscribers 集合的并发修改
@@ -104,10 +104,10 @@ class Ref(Generic[T]):
     def value(self) -> T:
         """
         获取Ref的值.
-        根据当前执行环境（同步线程或异步协程）获取 effect,并进行依赖收集.
+        根据当前执行环境(同步线程或异步协程)获取 effect,并进行依赖收集.
         """
         current_effect = None
-        # 优先从 asyncio contextvar 获取（如果在 asyncio 环境中）
+        # 优先从 asyncio contextvar 获取(如果在 asyncio 环境中)
         try:
             if asyncio.current_task(None):  # 检查是否在 asyncio 任务中
                 current_effect = local._async_local_current_effect.get()

@@ -1,5 +1,5 @@
-"""EffectWrapper 类和 effect 装饰器的实现。
-提供了对同步和异步效果的支持,并允许在 Ref 变化时触发效果。
+"""EffectWrapper 类和 effect 装饰器的实现.
+提供了对同步和异步效果的支持,并允许在 Ref 变化时触发效果.
 
 用法:
     from cognihub_pyeffectref import effect, Ref
@@ -18,7 +18,7 @@ from typing import Callable, Any
 
 class EffectWrapper:
     """
-    封装 effect 函数,提供 __call__ 使其可调用,并管理其 stop 行为。
+    封装 effect 函数,提供 __call__ 使其可调用,并管理其 stop 行为.
     """
 
     def __init__(self, func: Callable[..., Any], is_async: bool):
@@ -31,7 +31,7 @@ class EffectWrapper:
         self._has_been_called_at_least_once = False # 标记是否至少被手动调用过一次
 
 
-    # 这是effect实例被直接调用时（例如 my_effect(arg1, arg2)）的入口
+    # 这是effect实例被直接调用时(例如 my_effect(arg1, arg2))的入口
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         if not self._is_active:
             print(f"Warning: Calling inactive effect '{self.name}'.")
@@ -87,12 +87,12 @@ class EffectWrapper:
         # 不设置上下文变量,因为依赖已收集
         return await self._func(*args_to_pass, **kwargs_to_pass)
     def stop(self) -> None:
-        """停止这个 effect,使其不再响应 Ref 变化。"""
+        """停止这个 effect,使其不再响应 Ref 变化."""
         self._is_active = False
         # 在这里,如果 Ref 内部存储的是 EffectWrapper 实例,
-        # 则可以遍历 Ref 的 _subscribers 并移除 self。
+        # 则可以遍历 Ref 的 _subscribers 并移除 self.
         # 但这需要 Ref 暴露一个 API 或 EffectWrapper 持有 Ref 的引用,
-        # 为了简化,我们只设置 _is_active。
+        # 为了简化,我们只设置 _is_active.
         print(f"Effect '{self._func.__name__}' stopped.")
     
     @property
@@ -102,7 +102,7 @@ class EffectWrapper:
 # --- 2. 装饰器 factory,返回一个 EffectWrapper 实例 ---
 def effect(func: Callable) -> EffectWrapper:
     """
-    一个通用的装饰器,返回一个 EffectWrapper 实例。
+    一个通用的装饰器,返回一个 EffectWrapper 实例.
     """
     is_async = asyncio.iscoroutinefunction(func)
     return EffectWrapper(func, is_async)

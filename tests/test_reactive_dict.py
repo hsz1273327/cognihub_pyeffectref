@@ -40,7 +40,7 @@ class TestReactiveDict(unittest.TestCase):
         self.assertEqual(len(rd), 3)
 
     def test_dot_notation_access(self) -> None:
-        """测试字典风格访问（原点语法访问已移除）"""
+        """测试字典风格访问(原点语法访问已移除)"""
         data = {"username": "bob", "score": 100}
         rd: ReactiveDict = ReactiveDict(data)
         
@@ -137,7 +137,7 @@ class TestReactiveDict(unittest.TestCase):
         self.assertEqual(len(rd), 2)
         self.assertNotIn("b", rd)
         
-        # ReactiveDict 不再支持点符号访问，删除操作仅支持括号符号
+        # ReactiveDict 不再支持点符号访问,删除操作仅支持括号符号
         
         with self.assertRaises(KeyError):
             _ = rd["b"]
@@ -328,7 +328,7 @@ class TestReactiveDictClassMethods(unittest.TestCase):
     """测试 ReactiveDict 的类方法"""
 
     def test_constructor_from_dict(self) -> None:
-        """测试从字典直接创建（构造函数）"""
+        """测试从字典直接创建(构造函数)"""
         data = {"name": "test", "value": 42}
         rd: ReactiveDict = ReactiveDict(data)
         
@@ -480,13 +480,13 @@ class TestReactiveDictIntegration(unittest.TestCase):
         self.assertEqual(multiplier_calls, 1)
         self.assertEqual(product_calls, 1)
         
-        # 修改 counter，应该触发 counter 和 product effects
+        # 修改 counter,应该触发 counter 和 product effects
         rd["counter"] = 5
         self.assertEqual(counter_calls, 2)
         self.assertEqual(multiplier_calls, 1)  # 不变
         self.assertEqual(product_calls, 2)
         
-        # 修改 multiplier，应该触发 multiplier 和 product effects
+        # 修改 multiplier,应该触发 multiplier 和 product effects
         rd["multiplier"] = 3
         self.assertEqual(counter_calls, 2)  # 不变
         self.assertEqual(multiplier_calls, 2)

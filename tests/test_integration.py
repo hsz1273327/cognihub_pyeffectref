@@ -71,7 +71,7 @@ class TestIntegration(unittest.TestCase):
         # 大量更新
         start_time = time.time()
         
-        for i in range(1, 1001):  # 从 1 开始，避免重复设置相同值
+        for i in range(1, 1001):  # 从 1 开始,避免重复设置相同值
             ref.value = i
         
         end_time = time.time()
@@ -79,7 +79,7 @@ class TestIntegration(unittest.TestCase):
         # 验证所有更新都触发了效果
         self.assertEqual(call_count, 1001)  # 初始 + 1000 次更新
         
-        # 性能应该是合理的（少于1秒）
+        # 性能应该是合理的(少于1秒)
         self.assertLess(end_time - start_time, 1.0)
 
     def test_dependency_tracking(self) -> None:
@@ -110,17 +110,17 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(a_calls, 1)
         self.assertEqual(b_calls, 1)
         
-        # 修改 ref_a，只有 effect_a 应该被触发
+        # 修改 ref_a,只有 effect_a 应该被触发
         ref_a.value = 10
         self.assertEqual(a_calls, 2)
         self.assertEqual(b_calls, 1)
         
-        # 修改 ref_b，只有 effect_b 应该被触发
+        # 修改 ref_b,只有 effect_b 应该被触发
         ref_b.value = 20
         self.assertEqual(a_calls, 2)
         self.assertEqual(b_calls, 2)
         
-        # 修改 ref_c，两个 effect 都不应该被触发
+        # 修改 ref_c,两个 effect 都不应该被触发
         ref_c.value = 30
         self.assertEqual(a_calls, 2)
         self.assertEqual(b_calls, 2)
@@ -140,13 +140,13 @@ class TestIntegration(unittest.TestCase):
             # 读取 ref_a
             a_val = ref_a.value
             
-            # 条件性地修改 ref_b，但不应该造成无限循环
+            # 条件性地修改 ref_b,但不应该造成无限循环
             if call_count <= 2:  # 限制递归深度
                 ref_b.value = a_val * 2
         
         circular_effect()
         
-        # 应该有限制的调用次数，不是无限循环
+        # 应该有限制的调用次数,不是无限循环
         self.assertLessEqual(call_count, 5)
 
     def test_multiple_effect_chains(self) -> None:
@@ -253,7 +253,7 @@ class TestIntegrationAsync(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(step2_ref.value, 20)   # 10 + 10
         self.assertEqual(final_ref.value, 60)   # 20 * 3
         
-        # 修改输入，等待链式反应
+        # 修改输入,等待链式反应
         input_ref.value = 10
         await asyncio.sleep(0.2)  # 等待所有异步操作完成
         
@@ -285,7 +285,7 @@ class TestIntegrationAsync(unittest.IsolatedAsyncioTestCase):
         
         self.assertEqual(success_calls, 1)
         
-        # 触发错误，但其他 effect 应该继续工作
+        # 触发错误,但其他 effect 应该继续工作
         trigger.value = 1
         await asyncio.sleep(0.1)  # 等待异步错误处理
         

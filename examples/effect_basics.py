@@ -2,7 +2,7 @@
 """
 Effect 基础示例
 
-演示 Effect 的基本使用方法，包括：
+演示 Effect 的基本使用方法,包括:
 - 创建和使用 Effect
 - Effect 的自动执行和依赖追踪
 - Effect 的清理和取消
@@ -41,9 +41,9 @@ def basic_effect_usage() -> None:
     
     # 触发初始执行
     compute_and_display()
-    print("✅ 创建了 Effect，会自动执行一次")
+    print("✅ 创建了 Effect,会自动执行一次")
     
-    # 修改依赖的值，Effect 会自动重新执行
+    # 修改依赖的值,Effect 会自动重新执行
     print("\n🔄 修改 count 值:")
     count.value = 5
     
@@ -75,7 +75,7 @@ def effect_dependency_tracking() -> None:
         full_name = first_name.value + last_name.value
         
         if show_age.value:
-            info = f"{full_name}，{age.value}岁"
+            info = f"{full_name},{age.value}岁"
         else:
             info = full_name
         
@@ -89,15 +89,15 @@ def effect_dependency_tracking() -> None:
     print("\n🔄 修改 first_name (应该触发 Effect):")
     first_name.value = "李"
     
-    print("\n🔄 修改 age (应该触发 Effect，因为 show_age 是 True):")
+    print("\n🔄 修改 age (应该触发 Effect,因为 show_age 是 True):")
     age.value = 30
     
     print("\n🔄 将 show_age 设为 False:")
     show_age.value = False
     
-    print("\n🔄 再次修改 age (不应该触发 Effect，因为 show_age 是 False):")
+    print("\n🔄 再次修改 age (不应该触发 Effect,因为 show_age 是 False):")
     age.value = 35
-    print("  ⚠️  注意：由于 show_age 为 False，age 不再是依赖项")
+    print("  ⚠️  注意:由于 show_age 为 False,age 不再是依赖项")
     
     print("\n🔄 修改 last_name (仍然会触发 Effect):")
     last_name.value = "四"
@@ -117,12 +117,12 @@ def effect_cleanup_example() -> None:
     
     @effect
     def timer_effect() -> Optional[Callable[[], None]]:
-        """定时器 Effect，返回清理函数"""
+        """定时器 Effect,返回清理函数"""
         if not timer_active.value:
             print("  ⏹️  定时器已停止")
             return None
         
-        print(f"  ⏰ 启动定时器，间隔: {timer_interval.value}秒")
+        print(f"  ⏰ 启动定时器,间隔: {timer_interval.value}秒")
         timer_status.append("started")
         
         # 返回清理函数
@@ -140,7 +140,7 @@ def effect_cleanup_example() -> None:
     print("\n▶️  启动定时器:")
     timer_active.value = True
     
-    # 修改间隔（会触发清理和重新创建）
+    # 修改间隔(会触发清理和重新创建)
     print("\n🔄 修改定时器间隔:")
     timer_interval.value = 0.5
     
@@ -207,7 +207,7 @@ def conditional_effect_example() -> None:
     print("\n👋 用户登出:")
     user_logged_in.value = False
     
-    print(f"\n📝 应用状态更新记录（共 {len(app_updates)} 次）:")
+    print(f"\n📝 应用状态更新记录(共 {len(app_updates)} 次):")
     for i, update in enumerate(app_updates, 1):
         print(f"   {i}. {update}")
 
@@ -290,10 +290,10 @@ def effect_performance_example() -> None:
     for i in range(2, 6):
         print(f"   设置值为 {i}")
         base_value.value = i
-        # 注意：每次修改都会立即触发 Effect
+        # 注意:每次修改都会立即触发 Effect
     
     print(f"\n📈 计算总共执行了 {computation_count} 次")
-    print("💡 在实际应用中，可能需要考虑防抖(debounce)或节流(throttle)技术")
+    print("💡 在实际应用中,可能需要考虑防抖(debounce)或节流(throttle)技术")
 
 
 def main() -> None:

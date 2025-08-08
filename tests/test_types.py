@@ -134,7 +134,7 @@ class TestTypeHints(unittest.TestCase):
 
     def test_type_inference(self) -> None:
         """测试类型推断"""
-        # 不显式指定类型，让 Python 推断
+        # 不显式指定类型,让 Python 推断
         auto_ref = Ref("auto inferred")
         self.assertEqual(auto_ref.value, "auto inferred")
         

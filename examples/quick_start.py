@@ -2,9 +2,9 @@
 """
 CogniHub PyEffectRef - 快速入门示例
 
-这个文件展示了库的核心功能和推荐用法：
-- 🔧 底层接口：适合简单状态管理
-- 🏗️ 高级接口：适合复杂数据结构
+这个文件展示了库的核心功能和推荐用法:
+- 🔧 底层接口:适合简单状态管理
+- 🏗️ 高级接口:适合复杂数据结构
 """
 
 import sys
@@ -125,7 +125,7 @@ def quick_start_readonly():
     try:
         config_view.app_name.value = "HackedApp"  # type: ignore
     except AttributeError:
-        print("✅ 只读保护生效，无法直接修改")
+        print("✅ 只读保护生效,无法直接修改")
     
     print("✅ 只读视图演示完成\n")
 
